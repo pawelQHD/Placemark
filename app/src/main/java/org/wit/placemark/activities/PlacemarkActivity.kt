@@ -4,33 +4,40 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_placemark.*
 import org.jetbrains.anko.*
-import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.longSnackbar
-import org.jetbrains.anko.design.snackbar
 import org.wit.placemark.R
+import org.wit.placemark.main.MainApp
 import org.wit.placemark.models.PlacemarkModel
 
 class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
 
     var placemark = PlacemarkModel()
-    val placemarks = ArrayList<PlacemarkModel>()
+    lateinit var app : MainApp
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_placemark)
+        app = application as MainApp
 
         btnAdd.setOnClickListener() {
             placemark.title = placemarkTitle.text.toString()
             placemark.description = placemarkDescription.text.toString()
-            if (placemark.title.isNotEmpty() and  placemark.description.isNotEmpty()) {
-                info("add Button Pressed: $placemarkTitle")
-                placemarks.add(placemark)
-                info("Placemark Title added to array list $placemarkTitle")
-                info("Placemark Description added to array list $placemarkDescription")
+            if (placemark.title.isNotEmpty()) {
+                app.placemarks.create(placemark.copy())
+                setResult(AppCompatActivity.RESULT_OK)
+                finish()
             }
-            else {
-                toast ("Title and Description needs to be filled in")
+            if (intent.hasExtra("placemark_edit")) {
+                placemark = intent.extras.getParcelable<PlacemarkModel>("placemark_edit")
+                placemarkTitle.setText(placemark.title)
+                placemarkDescription.setText(placemark.description)
             }
+        }
+        cancelBtn.setOnClickListener() {
+            setResult(AppCompatActivity.RESULT_CANCELED)
+            finish()
+        }
+    }
+}
             /*toast("Hi there!")
             //toast(R.string.message)
             longToast("Wow, such duration")
@@ -58,14 +65,14 @@ class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
             }.show()
             */
 
+            /*
             val countries = listOf("Russia", "USA", "Japan", "Australia")
             selector("Where are you from?", countries, { dialogInterface, i ->
                 toast("So you're living in ${countries[i]}, right?")
             })
+            */
 
             /*
             val dialog = progressDialog(message = "Please wait a bit…", title = "Fetching data")
             */
-            }
-        }
-    }
+
